@@ -126,6 +126,26 @@ async function run() {
       }
     });
 
+      // TASK DELETE //
+      app.delete("/task", verifyJWT, async (req, res) => {
+        const todoId = req.query.todoId;
+        const decodedId = req.decoded.uid;
+        const uid = req.query.uid;
+        if (decodedId === uid) {
+          const result = await tasksCollection.deleteOne({
+            _id: ObjectId(todoId),
+          });
+          if (result.acknowledged) {
+            res.send({
+              success: true,
+              message: "ToDo Deleted successfully",
+            });
+          }
+        } else {
+          res.status(403).send({ success: false, message: "Forbidden Access." });
+        }
+      });
+    
   
   } 
 
