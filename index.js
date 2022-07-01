@@ -80,6 +80,35 @@ async function run() {
     });
 
   
+    app.put("/user", async (req, res) => {
+      const user = req.body;
+      const filter = { email: user.email, uid: user.uid };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: user,
+      };
+      const result = await usersCollection.updateOne(
+        filter,
+        updateDoc,
+        options
+      );
+      const token = jwt.sign(
+        { email: user.email, uid: user.uid },
+        process.env.ACCESS_TOKEN_SECRET,
+        { expiresIn: "7d" }
+      );
+      res.send({ result, token });
+    });
+
+
+    // DELETE USER //
+    app.delete("/user/:email", verifyJWT, verifyAdmin, async (req, res) => {
+      const email = req.params.email;
+      const result = await usersCollection.deleteOne({ email: email });
+      res.send(result);
+    });
+
+ 
 
   } 
 
