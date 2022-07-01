@@ -39,7 +39,13 @@ async function run() {
       }
     };
 
+    app.get("/tasks", verifyJWT, async (req, res) => {
+      const tasks = await tasksCollection.find({}).toArray();
+      res.send(tasks);
+    });
+
     
+
   } 
 
   
