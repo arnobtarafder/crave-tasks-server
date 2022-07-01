@@ -21,11 +21,36 @@ const client = new MongoClient(uri, {
 });
 
 async function run() {
-  await client.connect();
-  console.log("connected to MongoDB");
-  const tasksCollection = client.db("craveTasks").collection("tasks");
-  const usersCollection = client.db("craveTasks").collection("users");
+  try {
+    await client.connect();
+    console.log("Connected to MongoDB");
+    const tasksCollection = client.db("craveTasks").collection("tasks");
+    const usersCollection = client.db("craveTasks").collection("users");
+
+    const verifyAdmin = async (req, res, next) => {
+      const requester = req.decoded.email;
+      const requesterAccount = await usersCollection.findOne({
+        email: requester,
+      });
+      if (requesterAccount.role === "admin") {
+        next();
+      } else {
+        res.status(403).send({ message: "forbidden" });
+      }
+    };
+
+    
+  } 
+
+  
+  finally {
+  
+  }
 }
+
+
+run().catch(console.dir);
+
 
 
 
