@@ -108,8 +108,25 @@ async function run() {
       res.send(result);
     });
 
- 
+    // TASK POST //
+    app.post("/createTask", verifyJWT, async (req, res) => {
+      const data = req.body;
+      const decodedId = req.decoded.uid;
+      const uid = req.query.uid;
+      if (uid === decodedId) {
+        const result = await tasksCollection.insertOne(data);
+        if (result.acknowledged) {
+          res.send({
+            success: true,
+            message: "ToDos Added successfully",
+          });
+        }
+      } else {
+        res.status(403).send({ success: false, message: "Forbidden Access." });
+      }
+    });
 
+  
   } 
 
   
