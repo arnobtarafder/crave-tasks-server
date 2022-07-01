@@ -180,6 +180,21 @@ async function run() {
       });
   
   
+      // COMPLETED TASKS OF MINE // 
+      app.get("/myTasks/completed", verifyJWT, async (req, res) => {
+        const decodedEmail = req.decoded.email;
+        const email = req.query.email;
+        if (email === decodedEmail) {
+          const myItems = await tasksCollection
+            .find({ email: email, completed: true })
+            .toArray();
+          res.send(myItems);
+        } else {
+          res.status(403).send({ message: "forbidden access" });
+        }
+      });
+  
+
   } 
 
   
