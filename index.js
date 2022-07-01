@@ -44,7 +44,17 @@ async function run() {
       res.send(tasks);
     });
 
-    
+    app.get("/users", async (req, res) => {
+      const uid = req.query.uid;
+      if (uid) {
+        const users = await usersCollection.find({ uid: uid }).toArray();
+        res.send(users);
+      } else {
+        res.status(403).send({ message: "forbidden access" });
+      }
+    });
+
+  
 
   } 
 
