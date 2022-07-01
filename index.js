@@ -194,6 +194,24 @@ async function run() {
         }
       });
   
+      
+      // UPDATE TASK BY SPECIFIC ID // 
+      app.patch("/task/updateTask/:id", verifyJWT, async (req, res) => {
+        const id = req.params.id;
+        const body = req.body;
+        const filter = { _id: ObjectId(id) };
+        const options = { upsert: true };
+        const updatedDoc = {
+          $set: body,
+        };
+        const taskUpdating = await tasksCollection.updateOne(
+          filter,
+          updatedDoc,
+          options
+        );
+        res.send(taskUpdating);
+      });
+
 
   } 
 
