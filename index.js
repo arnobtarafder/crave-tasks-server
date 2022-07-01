@@ -146,6 +146,27 @@ async function run() {
         }
       });
     
+      
+      // CATCH COMPLETED TASK // 
+      app.patch("/task", verifyJWT, async (req, res) => {
+        const decodedId = req.decoded.uid;
+        const uid = req.query.uid;
+        const todoId = req.query.todoId;
+        if (decodedId === uid) {
+          const query = { _id: ObjectId(todoId) };
+          const updateDoc = {
+            $set: { completed: true },
+          };
+          const result = await tasksCollection.updateOne(query, updateDoc);
+          if (result.acknowledged) {
+            res.send({ success: true, message: "Task Completed" });
+          }
+        } else {
+          res.status(403).send({ success: false, message: "Forbidden Access." });
+        }
+      });
+  
+      
   
   } 
 
