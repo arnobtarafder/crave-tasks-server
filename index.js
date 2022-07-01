@@ -59,7 +59,27 @@ async function run() {
       res.send(users);
     });
 
-    
+
+    // UPDATE USER DATA USING PATCH //
+    app.patch("/users", verifyJWT, async (req, res) => {
+      const data = req.body;
+      const uid = req.query.uid;
+      const decodedID = req.decoded.uid;
+      const query = { uid: uid };
+      const updateDoc = {
+        $set: data,
+      };
+      if (decodedID === uid) {
+        const result = await usersCollection.updateOne(query, updateDoc);
+        if (result.acknowledged) {
+          res.send({ success: true, message: "Update profile successfully" });
+        }
+      } else {
+        res.status(403).send({ success: false, message: "Forbidden request" });
+      }
+    });
+
+  
 
   } 
 
