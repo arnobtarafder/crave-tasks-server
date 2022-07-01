@@ -166,7 +166,19 @@ async function run() {
         }
       });
   
-      
+
+      // MY TASKS //
+      app.get("/myTasks", verifyJWT, async (req, res) => {
+        const decodedEmail = req.decoded.email;
+        const email = req.query.email;
+        if (email === decodedEmail) {
+          const myItems = await tasksCollection.find({ email: email }).toArray();
+          res.send(myItems);
+        } else {
+          res.status(403).send({ message: "forbidden access" });
+        }
+      });
+  
   
   } 
 
