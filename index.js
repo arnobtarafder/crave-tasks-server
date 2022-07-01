@@ -42,6 +42,7 @@ async function run() {
     const tasksCollection = client.db("craveTasks").collection("tasks");
     const usersCollection = client.db("craveTasks").collection("users");
 
+
     const verifyAdmin = async (req, res, next) => {
       const requester = req.decoded.email;
       const requesterAccount = await usersCollection.findOne({
@@ -50,7 +51,7 @@ async function run() {
       if (requesterAccount.role === "admin") {
         next();
       } else {
-        res.status(403).send({ message: "forbidden" });
+        res.status(403).send({ message: "Forbidden" });
       }
     };
 
@@ -65,7 +66,7 @@ async function run() {
         const users = await usersCollection.find({ uid: uid }).toArray();
         res.send(users);
       } else {
-        res.status(403).send({ message: "forbidden access" });
+        res.status(403).send({ message: "Forbidden access" });
       }
     });
 
@@ -74,8 +75,7 @@ async function run() {
       res.send(users);
     });
 
-
-    // UPDATE USER DATA USING PATCH //
+    // UPDATE USER DATA USING PATCH
     app.patch("/users", verifyJWT, async (req, res) => {
       const data = req.body;
       const uid = req.query.uid;
@@ -87,14 +87,13 @@ async function run() {
       if (decodedID === uid) {
         const result = await usersCollection.updateOne(query, updateDoc);
         if (result.acknowledged) {
-          res.send({ success: true, message: "Update profile successfully" });
+          res.send({ success: true, message: "Updated profile successfully" });
         }
       } else {
         res.status(403).send({ success: false, message: "Forbidden request" });
       }
     });
 
-  
     app.put("/user", async (req, res) => {
       const user = req.body;
       const filter = { email: user.email, uid: user.uid };
@@ -115,15 +114,14 @@ async function run() {
       res.send({ result, token });
     });
 
-
-    // DELETE USER //
     app.delete("/user/:email", verifyJWT, verifyAdmin, async (req, res) => {
       const email = req.params.email;
       const result = await usersCollection.deleteOne({ email: email });
       res.send(result);
     });
 
-    // TASK POST //
+
+    // TASK POST
     app.post("/createTask", verifyJWT, async (req, res) => {
       const data = req.body;
       const decodedId = req.decoded.uid;
@@ -133,7 +131,7 @@ async function run() {
         if (result.acknowledged) {
           res.send({
             success: true,
-            message: "ToDos Added successfully",
+            message: "Task Added successfully",
           });
         }
       } else {
@@ -141,91 +139,83 @@ async function run() {
       }
     });
 
-      // TASK DELETE //
-      app.delete("/task", verifyJWT, async (req, res) => {
-        const todoId = req.query.todoId;
-        const decodedId = req.decoded.uid;
-        const uid = req.query.uid;
-        if (decodedId === uid) {
-          const result = await tasksCollection.deleteOne({
-            _id: ObjectId(todoId),
+    // TASK DELETE
+    app.delete("/task", verifyJWT, async (req, res) => {
+      const todoId = req.query.todoId;
+      const decodedId = req.decoded.uid;
+      const uid = req.query.uid;
+      if (decodedId === uid) {
+        const result = await tasksCollection.deleteOne({
+          _id: ObjectId(todoId),
+        });
+        if (result.acknowledged) {
+          res.send({
+            success: true,
+            message: "Task Deleted successfully",
           });
-          if (result.acknowledged) {
-            res.send({
-              success: true,
-              message: "ToDo Deleted successfully",
-            });
-          }
-        } else {
-          res.status(403).send({ success: false, message: "Forbidden Access." });
         }
-      });
-    
-      
-      // CATCH COMPLETED TASK // 
-      app.patch("/task", verifyJWT, async (req, res) => {
-        const decodedId = req.decoded.uid;
-        const uid = req.query.uid;
-        const todoId = req.query.todoId;
-        if (decodedId === uid) {
-          const query = { _id: ObjectId(todoId) };
-          const updateDoc = {
-            $set: { completed: true },
-          };
-          const result = await tasksCollection.updateOne(query, updateDoc);
-          if (result.acknowledged) {
-            res.send({ success: true, message: "Task Completed" });
-          }
-        } else {
-          res.status(403).send({ success: false, message: "Forbidden Access." });
-        }
-      });
-  
+      } else {
+        res.status(403).send({ success: false, message: "Forbidden Access." });
+      }
+    });
 
-      // MY TASKS //
-      app.get("/myTasks", verifyJWT, async (req, res) => {
-        const decodedEmail = req.decoded.email;
-        const email = req.query.email;
-        if (email === decodedEmail) {
-          const myItems = await tasksCollection.find({ email: email }).toArray();
-          res.send(myItems);
-        } else {
-          res.status(403).send({ message: "forbidden access" });
-        }
-      });
-  
-  
-      // COMPLETED TASKS OF MINE // 
-      app.get("/myTasks/completed", verifyJWT, async (req, res) => {
-        const decodedEmail = req.decoded.email;
-        const email = req.query.email;
-        if (email === decodedEmail) {
-          const myItems = await tasksCollection
-            .find({ email: email, completed: true })
-            .toArray();
-          res.send(myItems);
-        } else {
-          res.status(403).send({ message: "forbidden access" });
-        }
-      });
-  
-      
-      // UPDATE TASK BY SPECIFIC ID // 
-      app.patch("/task/updateTask/:id", verifyJWT, async (req, res) => {
-        const id = req.params.id;
-        const body = req.body;
-        const filter = { _id: ObjectId(id) };
-        const options = { upsert: true };
-        const updatedDoc = {
-          $set: body,
+    app.patch("/task", verifyJWT, async (req, res) => {
+      const decodedId = req.decoded.uid;
+      const uid = req.query.uid;
+      const todoId = req.query.todoId;
+      if (decodedId === uid) {
+        const query = { _id: ObjectId(todoId) };
+        const updateDoc = {
+          $set: { completed: true },
         };
-        const taskUpdating = await tasksCollection.updateOne(
-          filter,
-          updatedDoc,
-          options
-        );
-        res.send(taskUpdating);
-      });
+        const result = await tasksCollection.updateOne(query, updateDoc);
+        if (result.acknowledged) {
+          res.send({ success: true, message: "ToDo Completed" });
+        }
+      } else {
+        res.status(403).send({ success: false, message: "Forbidden Access." });
+      }
+    });
+
+    app.get("/myTasks", verifyJWT, async (req, res) => {
+      const decodedEmail = req.decoded.email;
+      const email = req.query.email;
+      if (email === decodedEmail) {
+        const myItems = await tasksCollection.find({ email: email }).toArray();
+        res.send(myItems);
+      } else {
+        res.status(403).send({ message: "forbidden access" });
+      }
+    });
+
+    app.get("/myTasks/completed", verifyJWT, async (req, res) => {
+      const decodedEmail = req.decoded.email;
+      const email = req.query.email;
+      if (email === decodedEmail) {
+        const myItems = await tasksCollection
+          .find({ email: email, completed: true })
+          .toArray();
+        res.send(myItems);
+      } else {
+        res.status(403).send({ message: "forbidden access" });
+      }
+    });
+
+    app.patch("/task/updateTask/:id", verifyJWT, async (req, res) => {
+      const id = req.params.id;
+      const body = req.body;
+      const filter = { _id: ObjectId(id) };
+      const options = { upsert: true };
+      const updatedDoc = {
+        $set: body,
+      };
+      const taskUpdating = await tasksCollection.updateOne(
+        filter,
+        updatedDoc,
+        options
+      );
+      res.send(taskUpdating);
+    });
 
   } 
 
